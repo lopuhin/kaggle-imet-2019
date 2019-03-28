@@ -1,0 +1,10 @@
+matplotlib==3.0.3
+numpy==1.16.2
+opencv-python==4.0.0.21
+pandas==0.23.4
+Pillow==5.1.0
+scikit-learn==0.20.3
+scipy==1.1.0
+torch
+torchvision==0.2.2
+tqdm==4.31.1
