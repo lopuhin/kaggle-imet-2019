@@ -8,9 +8,11 @@ import torch
 from torch.utils.data import Dataset
 
 from .transforms import tensor_transform
+from .utils import ON_KAGGLE
 
 
 N_CLASSES = 1103
+DATA_ROOT = Path('../input/imet-2019-fgvc6' if ON_KAGGLE else './data')
 
 
 class TrainDataset(Dataset):
@@ -49,7 +51,7 @@ class TTADataset:
     def __getitem__(self, idx):
         item = self._df.iloc[idx % len(self._df)]
         image = load_transform_image(item, self._root, self._image_transform)
-        return image, item.Id
+        return image, item.id
 
 
 def load_transform_image(

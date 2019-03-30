@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader
 import tqdm
 
 from . import models
-from .dataset import TrainDataset, TTADataset, get_ids, N_CLASSES
+from .dataset import TrainDataset, TTADataset, get_ids, N_CLASSES, DATA_ROOT
 from .transforms import image_transform
 from .utils import write_event, load_model, mean_df
 
@@ -27,7 +27,7 @@ def main():
     arg = parser.add_argument
     arg('mode', choices=['train', 'validate', 'predict_valid', 'predict_test'])
     arg('run_root')
-    arg('--model', default='resnet18')
+    arg('--model', default='resnet34')
     arg('--pretrained', type=int, default=1)
     arg('--batch-size', type=int, default=64)
     arg('--step', type=int, default=1)
@@ -45,9 +45,8 @@ def main():
     args = parser.parse_args()
 
     run_root = Path(args.run_root)
-    data_root = Path('data')
-    folds = pd.read_csv(data_root / 'folds.csv')
-    train_root = data_root / ('train_sample' if args.use_sample else 'train')
+    folds = pd.read_csv(DATA_ROOT / 'folds.csv')
+    train_root = DATA_ROOT / ('train_sample' if args.use_sample else 'train')
     if args.use_sample:
         folds = folds[folds['Id'].isin(set(get_ids(train_root)))]
     train_fold = folds[folds['fold'] != args.fold]
@@ -120,11 +119,11 @@ def main():
                     out_path=run_root / 'val.h5',
                     **predict_kwargs)
         elif args.mode == 'predict_test':
-            test_root = data_root / (
+            test_root = DATA_ROOT / (
                 'test_sample' if args.use_sample else 'test')
-            ss = pd.read_csv(data_root / 'sample_submission.csv')
+            ss = pd.read_csv(DATA_ROOT / 'sample_submission.csv')
             if args.use_sample:
-                ss = ss[ss['Id'].isin(set(get_ids(test_root)))]
+                ss = ss[ss['id'].isin(set(get_ids(test_root)))]
             if args.limit:
                 ss = ss[:args.limit]
             predict(model, df=ss, root=test_root,

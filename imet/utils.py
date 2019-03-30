@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import glob
+import os
 from pathlib import Path
 from typing import Dict
 
@@ -9,6 +10,9 @@ import pandas as pd
 from scipy.stats.mstats import gmean
 import torch
 from torch import nn
+
+
+ON_KAGGLE: bool = 'KAGGLE_WORKING_DIR' in os.environ
 
 
 def gmean_df(df: pd.DataFrame) -> pd.DataFrame:
