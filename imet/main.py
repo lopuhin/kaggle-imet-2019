@@ -45,7 +45,7 @@ def main():
     args = parser.parse_args()
 
     run_root = Path(args.run_root)
-    folds = pd.read_csv(DATA_ROOT / 'folds.csv')
+    folds = pd.read_csv('folds.csv')
     train_root = DATA_ROOT / ('train_sample' if args.use_sample else 'train')
     if args.use_sample:
         folds = folds[folds['Id'].isin(set(get_ids(train_root)))]
