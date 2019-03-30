@@ -1,3 +1,4 @@
+json-lines==0.5.0
 matplotlib==3.0.3
 numpy==1.16.2
 opencv-python==4.0.0.21
