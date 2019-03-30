@@ -295,3 +295,7 @@ def validation(
 
 def _reduce_loss(loss):
     return loss.sum() / loss.shape[0]
+
+
+if __name__ == '__main__':
+    main()

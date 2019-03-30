@@ -21,6 +21,6 @@ def run(command):
 
 
 run('python setup.py develop --install-dir /kaggle/working')
-run('imet train model_1 --n-epochs 2')
-run('imet predict_test model_1')
-run('make-submission model_1/test.h5 submission.csv --threshold 0.1')
+run('python -m imet.main train model_1 --n-epochs 2')
+run('python -m imet.main predict_test model_1')
+run('python -m imet.make_submission model_1/test.h5 submission.csv --threshold 0.1')

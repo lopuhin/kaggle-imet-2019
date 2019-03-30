@@ -30,3 +30,7 @@ def main():
 
 def get_classes(item):
     return ' '.join(cls for cls, is_present in item.items() if is_present)
+
+
+if __name__ == '__main__':
+    main()
