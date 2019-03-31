@@ -19,7 +19,8 @@ from . import models
 from .dataset import TrainDataset, TTADataset, get_ids, N_CLASSES, DATA_ROOT
 from .transforms import image_transform
 from .utils import (
-    write_event, load_model, mean_df, ThreadingDataLoader as DataLoader)
+    write_event, load_model, mean_df, ThreadingDataLoader as DataLoader,
+    ON_KAGGLE)
 
 
 def main():
@@ -27,11 +28,11 @@ def main():
     arg = parser.add_argument
     arg('mode', choices=['train', 'validate', 'predict_valid', 'predict_test'])
     arg('run_root')
-    arg('--model', default='resnet34')
+    arg('--model', default='resnet50')
     arg('--pretrained', type=int, default=1)
     arg('--batch-size', type=int, default=64)
     arg('--step', type=int, default=1)
-    arg('--workers', type=int, default=4)
+    arg('--workers', type=int, default=2 if ON_KAGGLE else 4)
     arg('--lr', type=float, default=1e-4)
     arg('--patience', type=int, default=4)
     arg('--clean', action='store_true')
