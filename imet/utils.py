@@ -3,6 +3,7 @@ import json
 import glob
 import os
 from pathlib import Path
+from multiprocessing.pool import ThreadPool
 from typing import Dict
 
 import numpy as np
@@ -10,6 +11,7 @@ import pandas as pd
 from scipy.stats.mstats import gmean
 import torch
 from torch import nn
+from torch.utils.data import DataLoader
 
 
 ON_KAGGLE: bool = 'KAGGLE_WORKING_DIR' in os.environ
@@ -28,6 +30,30 @@ def load_model(model: nn.Module, path: Path) -> Dict:
     model.load_state_dict(state['model'])
     print('Loaded model from epoch {epoch}, step {step:,}'.format(**state))
     return state
+
+
+class ThreadingDataLoader(DataLoader):
+    def __iter__(self):
+        sample_iter = iter(self.batch_sampler)
+        if self.num_workers == 0:
+            for indices in sample_iter:
+                yield self.collate_fn([self._get_item(i) for i in indices])
+        else:
+            prefetch = 1
+            with ThreadPool(processes=self.num_workers) as pool:
+                futures = []
+                for indices in sample_iter:
+                    futures.append([pool.apply_async(self._get_item, args=(i,))
+                                    for i in indices])
+                    if len(futures) > prefetch:
+                        yield self.collate_fn([f.get() for f in futures.pop(0)])
+                    # items = pool.map(lambda i: self.dataset[i], indices)
+                    # yield self.collate_fn(items)
+                for batch_futures in futures:
+                    yield self.collate_fn([f.get() for f in batch_futures])
+
+    def _get_item(self, i):
+        return self.dataset[i]
 
 
 def write_event(log, step: int, **data):

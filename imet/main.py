@@ -13,13 +13,13 @@ from sklearn.exceptions import UndefinedMetricWarning
 import torch
 from torch import nn, cuda
 from torch.optim import Adam
-from torch.utils.data import DataLoader
 import tqdm
 
 from . import models
 from .dataset import TrainDataset, TTADataset, get_ids, N_CLASSES, DATA_ROOT
 from .transforms import image_transform
-from .utils import write_event, load_model, mean_df
+from .utils import (
+    write_event, load_model, mean_df, ThreadingDataLoader as DataLoader)
 
 
 def main():
