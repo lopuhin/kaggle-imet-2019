@@ -24,7 +24,7 @@ def main():
     df = mean_df(df)
     df = df > args.threshold
     df = df.apply(get_classes, axis=1)
-    df.name = 'Predicted'
+    df.name = 'attribute_ids'
     df.to_csv(args.output, header=True)
 
 
