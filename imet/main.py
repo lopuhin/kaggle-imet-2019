@@ -285,7 +285,7 @@ def validation(
 
 
 def binarize_prediction(probabilities, threshold: float, argsorted=None,
-                        min_labels=2, max_labels=10):
+                        min_labels=1, max_labels=10):
     """ Return matrix of 0/1 predictions, same shape as probabilities.
     """
     assert probabilities.shape[1] == N_CLASSES
