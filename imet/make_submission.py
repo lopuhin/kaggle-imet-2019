@@ -4,6 +4,7 @@ import pandas as pd
 
 from .utils import mean_df
 from .dataset import DATA_ROOT
+from .main import binarize_prediction
 
 
 def main():
@@ -22,7 +23,7 @@ def main():
         dfs.append(df)
     df = pd.concat(dfs)
     df = mean_df(df)
-    df = df > args.threshold
+    df[:] = binarize_prediction(df.values, threshold=args.threshold)
     df = df.apply(get_classes, axis=1)
     df.name = 'attribute_ids'
     df.to_csv(args.output, header=True)

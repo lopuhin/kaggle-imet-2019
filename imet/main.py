@@ -254,7 +254,7 @@ def validation(
     all_losses, all_predictions, all_targets = [], [], []
     with torch.no_grad():
         for inputs, targets in valid_loader:
-            all_targets.append(targets.numpy())
+            all_targets.append(targets.numpy().copy())
             if use_cuda:
                 inputs, targets = inputs.cuda(), targets.cuda()
             outputs = model(inputs)
@@ -272,25 +272,36 @@ def validation(
                 all_targets, y_pred, beta=2, average='samples')
 
     metrics = {}
+    argsorted = all_predictions.argsort(axis=1)
     for threshold in [0.05, 0.10, 0.15, 0.20]:
         metrics[f'valid_f2_th_{threshold:.2f}'] = get_score(
-            all_predictions > threshold)
+            binarize_prediction(all_predictions, threshold, argsorted))
+    metrics['valid_loss'] = np.mean(all_losses)
+    print(' | '.join(f'{k} {v:.3f}' for k, v in sorted(
+        metrics.items(), key=lambda kv: -kv[1])))
 
-    argsorted = all_predictions.argsort(axis=1)
-    for top_n in [2, 3, 4, 5, 6]:
-        top_n_pred = np.zeros_like(all_targets)
-        col_indices = argsorted[:, -top_n:].reshape(-1)
-        row_indices = [i // top_n for i in range(len(col_indices))]
-        top_n_pred[row_indices, col_indices] = 1
-        metrics[f'valid_f2_top_{top_n}'] = get_score(top_n_pred)
-
-    valid_loss: float = np.mean(all_losses)
-    metrics['valid_loss'] = valid_loss
-    for prefix in ['valid_loss', 'valid_f2_th', 'valid_f2_top']:
-        print(' | '.join(f'{k} {v:.3f}' for k, v in sorted(
-            metrics.items(), key=lambda kv: -kv[1])
-                        if k.startswith(prefix)))
     return metrics
+
+
+def binarize_prediction(probabilities, threshold: float, argsorted=None,
+                        min_labels=2, max_labels=10):
+    """ Return matrix of 0/1 predictions, same shape as probabilities.
+    """
+    assert probabilities.shape[1] == N_CLASSES
+    if argsorted is None:
+        argsorted = probabilities.argsort(axis=1)
+    max_mask = _make_mask(argsorted, max_labels)
+    min_mask = _make_mask(argsorted, min_labels)
+    prob_mask = probabilities > threshold
+    return (max_mask & prob_mask) | min_mask
+
+
+def _make_mask(argsorted, top_n: int):
+    mask = np.zeros_like(argsorted, dtype=np.uint8)
+    col_indices = argsorted[:, -top_n:].reshape(-1)
+    row_indices = [i // top_n for i in range(len(col_indices))]
+    mask[row_indices, col_indices] = 1
+    return mask
 
 
 def _reduce_loss(loss):
