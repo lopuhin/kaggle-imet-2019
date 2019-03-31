@@ -23,5 +23,5 @@ def run(command):
 run('python setup.py develop --install-dir /kaggle/working')
 run('python -m imet.make_folds')
 run('python -m imet.main train model_1 --workers 0 --n-epochs 2')
-run('python -m imet.main predict_test model_1')
+run('python -m imet.main predict_test model_1 --workers 0')
 run('python -m imet.make_submission model_1/test.h5 submission.csv --threshold 0.1')
