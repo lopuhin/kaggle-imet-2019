@@ -17,7 +17,7 @@ import tqdm
 
 from . import models
 from .dataset import TrainDataset, TTADataset, get_ids, N_CLASSES, DATA_ROOT
-from .transforms import image_transform
+from .transforms import train_transform, test_transform
 from .utils import (
     write_event, load_model, mean_df, ThreadingDataLoader as DataLoader,
     ON_KAGGLE)
@@ -56,7 +56,7 @@ def main():
         train_fold = train_fold[:args.limit]
         valid_fold = valid_fold[:args.limit]
 
-    def make_loader(df: pd.DataFrame) -> DataLoader:
+    def make_loader(df: pd.DataFrame, image_transform) -> DataLoader:
         return DataLoader(
             TrainDataset(train_root, df, image_transform, debug=args.debug),
             shuffle=True,
@@ -79,8 +79,8 @@ def main():
         (run_root / 'params.json').write_text(
             json.dumps(vars(args), indent=4, sort_keys=True))
 
-        train_loader = make_loader(train_fold)
-        valid_loader = make_loader(valid_fold)
+        train_loader = make_loader(train_fold, train_transform)
+        valid_loader = make_loader(valid_fold, test_transform)
         print(f'{len(train_loader.dataset):,} items in train, '
               f'{len(valid_loader.dataset):,} in valid')
 
@@ -102,7 +102,7 @@ def main():
             train(params=all_params, **train_kwargs)
 
     elif args.mode == 'validate':
-        valid_loader = make_loader(valid_fold)
+        valid_loader = make_loader(valid_fold, test_transform)
         load_model(model, run_root / 'model.pt')
         validation(model, criterion, tqdm.tqdm(valid_loader, desc='Validation'),
                    use_cuda=use_cuda)
@@ -135,7 +135,7 @@ def main():
 def predict(model, root: Path, df: pd.DataFrame, out_path: Path,
             batch_size: int, tta: int, workers: int, use_cuda: bool):
     loader = DataLoader(
-        dataset=TTADataset(root, df, image_transform, tta=tta),
+        dataset=TTADataset(root, df, test_transform, tta=tta),
         shuffle=False,
         batch_size=batch_size,
         num_workers=workers,

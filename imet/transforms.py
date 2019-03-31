@@ -51,8 +51,12 @@ class RandomSizedCrop:
         return crop(scale(img))
 
 
-image_transform = Compose([
-    # TODO RandomSizedCrop
+train_transform = Compose([
+    RandomCrop(224),
+])
+
+
+test_transform = Compose([
     RandomCrop(224),
 ])
 
